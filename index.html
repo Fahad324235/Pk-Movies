@@ -250,6 +250,25 @@
         #favoriteBtn:hover {
              background: #c2185b;
         }
+
+        /* New Download Links Button Style */
+        #otherDownloadBtn { /* 👈 New style for the smaller button */
+            display: block;
+            width: 100%; 
+            margin-top: 10px;
+            padding: 8px 12px;
+            background: #3f51b5;
+            color: white;
+            border-radius: 6px;
+            text-align: center;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        #otherDownloadBtn:hover {
+            background: #303f9f;
+        }
         
         /* Info Box for Genres/Year */
         #modalInfo {
@@ -456,10 +475,15 @@
             </div>
         </div>
         
-        <div id="movieLinksContainer" class="btn-box" style="display: none;">
-            <button id="favoriteBtn" class="btn" data-key=""> Add to Favorites</button>
-            <button id="playBtn" class="btn">Play Movie</button>
-            <button id="downloadBtn" class="btn">Download</button> 
+        <div id="movieLinksContainer" style="display: none;">
+            <div class="btn-box">
+                <button id="favoriteBtn" class="btn" data-key=""> Add to Favorites</button>
+                <button id="playBtn" class="btn">Play Movie</button>
+                <button id="downloadBtn" class="btn">Download</button> 
+            </div>
+            <button id="otherDownloadBtn" style="display: none;" onclick="openOtherDownloadLinks()">
+                <i class="fas fa-link"></i> Other Download Links
+            </button>
         </div>
     </div>
 </div>
@@ -540,7 +564,7 @@
     
     let searchTimeout = null; 
 
-    // Ad Links Array
+    // Ad Links Array (Unchanged)
     const adLinks = [
         "https://www.effectivegatecpm.com/yz4z5szmf?key=73186bcddd33133e4b3c585292f10bde",
         "https://www.effectivegatecpm.com/s2mq62in?key=b17a7185381af8ce5baa404d8817d708",
@@ -739,6 +763,7 @@
         const downloadBtn = document.getElementById("downloadBtn"); 
         const playBtn = document.getElementById("playBtn"); 
         const seasonSelect = document.getElementById("seasonSelect"); 
+        const otherDownloadBtn = document.getElementById('otherDownloadBtn'); // Get the new button
 
         
         // Set up the Favorites button
@@ -755,9 +780,16 @@
             favoriteBtn.classList.remove('added');
         }
 
+        // Setup the Other Download Button 
+        if (m.otherDownloadLink && m.otherDownloadLink.trim() !== '' && m.otherDownloadLink.trim() !== '#') {
+            otherDownloadBtn.style.display = 'block';
+        } else {
+            otherDownloadBtn.style.display = 'none';
+        }
+
 
         if (m.type === 'series') {
-            movieLinksContainer.style.display = 'flex'; 
+            movieLinksContainer.style.display = 'block'; // Changed to block to allow the new button to take full width
             seriesEpisodeContainer.style.display = 'block';
 
             playBtn.style.display = 'none'; // Hide movie play button for series
@@ -780,7 +812,7 @@
 
         } else {
             seriesEpisodeContainer.style.display = 'none';
-            movieLinksContainer.style.display = 'flex'; 
+            movieLinksContainer.style.display = 'block'; // Changed to block
             
             playBtn.style.display = 'inline-block';
             downloadBtn.style.display = 'inline-block'; 
@@ -833,6 +865,15 @@
             `;
             episodeList.appendChild(item);
         });
+    }
+
+    // NEW FUNCTION: Open Other Download Links
+    function openOtherDownloadLinks() {
+        if (currentDetailData && currentDetailData.otherDownloadLink) {
+            window.open(currentDetailData.otherDownloadLink, '_blank');
+        } else {
+            alert("No other download link available.");
+        }
     }
 
 
