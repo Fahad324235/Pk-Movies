@@ -15,7 +15,7 @@
             background: linear-gradient(135deg, #1a1a1a, #101020);
             color: #fff;
             margin: 0;
-            padding: 0 0 60px 0; /* 60px padding for fixed bottom bar */
+            padding: 0 0 60px 0; 
         }
 
         .header {
@@ -72,11 +72,10 @@
             .movie-grid {
                 grid-template-columns: 1fr; 
             }
-            /* Adjusted for Category Overlay on small screens */
             .categories-content {
-                max-width: 100%; /* Full width */
+                max-width: 100%; 
                 margin: 0;
-                height: auto; /* موبائل پر کیٹگری اوورلے کی اونچائی کم کرنے کے لیے */
+                height: auto; 
                 border-radius: 0;
                 padding: 20px 10px;
             }
@@ -85,58 +84,56 @@
             }
         }
         
-        /* 🎨 UPDATED MOVIE CARD STYLES */
+        /* MOVIE CARD STYLES */
         .movie-card {
-            background: #1f1f2e; /* Darker background for the entire card */
-            border-radius: 2px; /* Smoother, larger corners */
+            background: #1f1f2e; 
+            border-radius: 2px; 
             overflow: hidden;
             cursor: pointer;
             transition: transform 0.3s, box-shadow 0.3s;
             position: relative;
             display: flex;
             flex-direction: column;
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5); /* Stronger shadow for depth */
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5); 
             border: 1px solid #333;
         }
 
         .movie-card:hover {  
-            transform: translateY(-5px) scale(1.02); /* Slight lift on hover */  
+            transform: translateY(-5px) scale(1.02); 
             border-color: #ff4d4d;  
             box-shadow: 0 10px 25px rgba(255, 77, 77, 0.4);   
         }  
 
         .movie-card img {  
             width: 100%;  
-            /* Height set to a fixed ratio for consistency */  
             aspect-ratio: 3/4;   
             object-fit: cover;   
             background-color: #000;   
             flex-shrink: 0;   
-            border-top-left-radius: 12px; /* Match card radius */  
-            border-top-right-radius: 12px;  
+            border-top-left-radius: 2px; 
+            border-top-right-radius: 2px;  
         }  
 
         .movie-card p {  
-            padding: 10px 10px 5px 10px; /* Padding adjustment */  
-            text-align: left; /* Aligned left for better readability */  
-            font-size: 18px; /* Slightly larger title */  
-            font-weight: 900; /* Extra bold */  
+            padding: 10px 10px 5px 10px; 
+            text-align: left; 
+            font-size: 18px; 
+            font-weight: 900; 
             color: #fff;  
             margin: 0;  
             white-space: nowrap;  
             overflow: hidden;  
-            text-overflow: ellipsis; /* For long titles */  
+            text-overflow: ellipsis; 
         }  
           
-        /* 🎨 UPDATED CATEGORY BADGE STYLES */  
         .category-badge {  
             background: none;   
-            color: #ff8c1a; /* Category color */  
-            padding: 0 10px 10px 10px; /* Padding for bottom of card */  
+            color: #ff8c1a; 
+            padding: 0 10px 10px 10px; 
             border-radius: 0;  
             font-size: 12px;   
             font-weight: bold;  
-            display: block; /* Takes full width */  
+            display: block; 
             text-align: left;  
         }
 
@@ -151,7 +148,7 @@
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
 
-        /* MOVIE DETAIL POPUP styles (Crucial for display) */
+        /* MOVIE DETAIL POPUP styles (CRUCIAL: Scrollable Modal) */
         .movie-detail { 
             display: none; 
             position: fixed; 
@@ -159,13 +156,65 @@
             background: rgba(0,0,0,0.85); 
             backdrop-filter: blur(3px); 
             padding: 20px; 
-            overflow-y: auto; 
+            overflow-y: auto; /* Allow scrolling within the modal */
             z-index: 40; 
         }
-        .detail-content { max-width: 600px; margin: 50px auto; background: #2a2a2a; padding: 20px; border-radius: 12px; position: relative; animation: pop 0.3s ease; }
+        .detail-content { 
+            max-width: 600px; 
+            margin: 50px auto; 
+            background: #2a2a2a; 
+            padding: 20px; 
+            border-radius: 12px; 
+            position: relative; /* Crucial for absolute positioning of close button */
+            animation: pop 0.3s ease; 
+        }
         @keyframes pop { 0% { transform: scale(0.7); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
-        .detail-content img { width: 100%; border-radius: 10px; margin-top: 50px; }
-        .detail-close-top { position: absolute; top: 8px; right: 8px; background: #ff0033; color: #fff; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 16px; z-index: 999; }
+
+        /* 🆕 UPDATED: Close button styling and positioning */
+        .detail-close-top { 
+            position: absolute; 
+            top: 5px; /* Distance from the top of the detail-content */
+            left: 50%;
+            transform: translateX(-50%); /* Center the button */
+            background: #ff0033; 
+            color: #fff; 
+            padding: 8px 15px; 
+            border-radius: 6px; 
+            cursor: pointer; 
+            font-weight: bold; 
+            font-size: 14px; /* Reduced size for center placement */
+            z-index: 999; 
+            transition: background 0.2s;
+        }
+        .detail-close-top:hover {
+            background: #cc002a;
+        }
+
+        /* 🆕 Player Container Style (Hidden by default & added margin-top for gap) */
+        #inModalPlayerContainer {
+            width: 100%;
+            border-radius: 10px;
+            overflow: hidden;
+            background: #000;
+            margin-top: 40px; /* 👈 Increased gap below the close button */
+            margin-bottom: 20px;
+            display: none; /* Crucial: Hide player by default */
+            border: 1px solid #ff8c1a;
+            position: relative;
+        }
+
+        #inModalPlayerContainer video {
+            width: 100%;
+            height: auto;
+            max-height: 400px; /* Optional: limit height on large screens */
+        }
+        
+        .detail-content img { 
+            width: 100%; 
+            border-radius: 10px; 
+            margin-top: 0px; 
+        }
+        
         
         /* Buttons */
         .btn-box { 
@@ -188,6 +237,7 @@
             min-width: 120px; 
         }
         .btn:hover { background: #ffc266; }
+        
         /* Style for Favorite Button */
         #favoriteBtn {
             background: #e91e63; 
@@ -201,7 +251,7 @@
              background: #c2185b;
         }
         
-        /* 🆕 Info Box for Genres/Year */
+        /* Info Box for Genres/Year */
         #modalInfo {
             margin-top: 15px;
             padding: 10px;
@@ -259,41 +309,7 @@
         .ep-download-btn:hover { background: #388e3c; }
 
 
-        /* VIDEO POPUP styles (Unchanged) */
-        #videoPopup { 
-            position: fixed; 
-            inset: 0; 
-            background: rgba(0,0,0,0.90); 
-            display: none; 
-            justify-content: center; 
-            align-items: center; 
-            z-index: 99999; 
-            flex-direction: column; 
-        }
-        #closeVideo { 
-            position: relative; 
-            margin-bottom: 15px; 
-            background: red; 
-            color: #fff; 
-            padding: 10px 25px; 
-            font-size: 16px; 
-            font-weight: bold; 
-            border-radius: 2px; 
-            cursor: pointer; 
-            z-index: 100000; 
-        }
-        #videoContainer { 
-            width: 92%; 
-            max-width: 900px; 
-            border-radius: 0px; 
-            overflow: hidden; 
-            background: #000; 
-            position: relative; 
-            border: 1px solid #ffffff; 
-        }
-        video { width: 100%; height: auto; }
-        
-        /* Ad Pop-up Styles (Crucial: Display is 'none' initially) */
+        /* Ad Pop-up Styles (Still needed for Download/Initial Ad) */
         #adPopup { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.95); display: none; justify-content: center; align-items: center; z-index: 100000; padding: 20px; }
         #adIframeContainer { width: 90%; height: 90%; max-width: 900px; max-height: 700px; position: relative; }
         #adIframe { width: 100%; height: 100%; border: none; }
@@ -339,7 +355,7 @@
             font-weight: bold;
         }
         
-        /* Categories Overlay Pop-up (Updated Styles) */
+        /* Categories Overlay Pop-up (Unchanged) */
         #categoriesOverlay {
             display: none;
             position: fixed;
@@ -350,8 +366,8 @@
             overflow-y: auto;
         }
         .categories-content {
-            max-width: 800px; /* Increased Max Width */
-            width: 90%; /* Added width for responsiveness */
+            max-width: 800px; 
+            width: 90%; 
             margin: 50px auto;
             background: #2a2a2a;
             padding: 20px;
@@ -411,8 +427,19 @@
     <div class="detail-content">
 
         <div class="detail-close-top" onclick="closeDetail()">Close</div>
-
+        
+        <div id="inModalPlayerContainer">
+            <video 
+                id="inModalVideoPlayer"
+                controls
+                autoplay
+                playsinline
+                preload="auto">
+                <source id="inModalVideoSource" src="#">
+            </video>
+        </div>
         <img id="modalImg" src="">
+        
         <h2 id="modalTitle"></h2>
         <div id="modalInfo">
             <span id="modalYear">Year: N/A</span>
@@ -434,21 +461,6 @@
             <button id="playBtn" class="btn">Play Movie</button>
             <button id="downloadBtn" class="btn">Download</button> 
         </div>
-    </div>
-</div>
-
-<div id="videoPopup">
-<div id="closeVideo" onclick="closeVideo()">Close</div> 
-    <div id="videoContainer">
-                <video 
-            id="videoPlayer"
-            controls
-            autoplay
-            playsinline
-            preload="auto">
-            
-            <source id="videoSource" src="#">
-        </video>
     </div>
 </div>
 
@@ -526,7 +538,6 @@
     let currentPage = 1;
     let totalPages = 1;
     
-    // ⏳ Debouncing Variable for Search Fix
     let searchTimeout = null; 
 
     // Ad Links Array
@@ -557,15 +568,14 @@
     };
     
     let currentVideoUrl = null; 
-    let currentDetailData = null; // To store current movie/series data for season switching
-    let currentDetailMovieKey = null; // Variable to hold the key of the currently opened movie detail
+    let currentDetailData = null; 
+    let currentDetailMovieKey = null; 
 
-    // --- Navigation & Filter Logic ---
+    // --- Navigation & Filter Logic (Unchanged) ---
     
     function setFilter(filter, element) {
         closeDetail(); 
         
-        // Clear search bar and reset filter-related timeout
         searchBar.value = '';
         clearTimeout(searchTimeout); 
         
@@ -578,7 +588,6 @@
 
         currentFilterType = filter;
 
-        // 2. Filter the content
         if (filter === 'all') {
             filteredMovies = allMovies;
         } else if (filter === 'movie') {
@@ -589,16 +598,13 @@
              filteredMovies = getFavoritesMovies();
         } 
         else {
-            // Category Filter
             filteredMovies = allMovies.filter(m => m.category === filter);
         }
         
-        // 3. Recalculate pages and render
         totalPages = Math.ceil(filteredMovies.length / MOVIES_PER_PAGE);
         currentPage = 1;
         renderPage(currentPage);
         
-        // Show/Hide Pagination
         if (totalPages <= 1 || filter === 'favorites' || currentFilterType === 'search') { 
             paginationControls.style.display = 'none';
         } else {
@@ -633,7 +639,6 @@
                 const categoryText = movie.category || 'Other'; 
                 const typeText = movie.type === 'series' ? 'Series' : 'Movie';
                 
-                // 💡 UPDATED HTML STRUCTURE: Image -> Title -> Badge
                 grid.innerHTML += `
                     <div class="movie-card" onclick="openDetail('${movie.key}')" data-title="${movie.title}" data-category="${categoryText}">
                         <img src="${movie.img}">
@@ -679,56 +684,63 @@
         const favoriteBtn = document.getElementById('favoriteBtn');
         
         if (favorites.includes(movieKey)) {
-            // Remove from favorites
             favorites = favorites.filter(key => key !== movieKey);
             localStorage.setItem('pakMoviesFavorites', JSON.stringify(favorites));
             
             favoriteBtn.innerHTML = ' Add to Favorites';
             favoriteBtn.classList.remove('added');
-            // Using console.log instead of alert
             console.log('Removed from Favorites!');
 
         } else {
-            // Add to favorites
             favorites.push(movieKey);
             localStorage.setItem('pakMoviesFavorites', JSON.stringify(favorites));
             
             favoriteBtn.innerHTML = '✅ Added to Favorites';
             favoriteBtn.classList.add('added');
-            // Using console.log instead of alert
             console.log('Successfully Added to Favorites!');
         }
     }
 
-    // --- Detail and Play Functions ---
+    // --- Detail and Play Functions (UPDATED) ---
     
 
     function openDetail(key) {
+        // 1. Hide the player first before showing details
+        const playerContainer = document.getElementById("inModalPlayerContainer");
+        playerContainer.style.display = 'none';
+        
+        // 2. Stop any existing video playback
+        const video = document.getElementById("inModalVideoPlayer");
+        if (!video.paused) {
+            video.pause();
+            // Optional: Reset player state
+            video.removeAttribute('src'); 
+            video.load();
+        }
+
+
         const m = allMovies.find(movie => movie.key === key);
         if (!m) return; 
         
-        currentDetailMovieKey = key; // Save the current movie key
-        currentDetailData = m; // Save the full data
+        currentDetailMovieKey = key; 
+        currentDetailData = m; 
 
         document.getElementById("modalImg").src = m.img;
         document.getElementById("modalTitle").innerText = m.title;
         document.getElementById("modalDesc").innerText = m.desc || ''; 
         
-        // Populate Genres and Year
         document.getElementById("modalYear").innerText = `Year: ${m.year || 'N/A'}`;
         document.getElementById("modalGenres").innerText = `Genres: ${m.genres || 'N/A'}`;
 
 
         const movieLinksContainer = document.getElementById("movieLinksContainer");
         const seriesEpisodeContainer = document.getElementById("seriesEpisodeContainer");
-        const episodeList = document.getElementById("episodeList");
         const favoriteBtn = document.getElementById("favoriteBtn"); 
         const downloadBtn = document.getElementById("downloadBtn"); 
+        const playBtn = document.getElementById("playBtn"); 
         const seasonSelect = document.getElementById("seasonSelect"); 
 
-        episodeList.innerHTML = '';
-        seasonSelect.innerHTML = '';
-
+        
         // Set up the Favorites button
         favoriteBtn.setAttribute('data-key', key);
         favoriteBtn.onclick = function() {
@@ -748,13 +760,14 @@
             movieLinksContainer.style.display = 'flex'; 
             seriesEpisodeContainer.style.display = 'block';
 
-            document.getElementById("playBtn").style.display = 'none';
+            playBtn.style.display = 'none'; // Hide movie play button for series
             downloadBtn.style.display = 'none'; 
             
             favoriteBtn.style.order = 1;
             
             // Populate Season Dropdown
             const seasonsCount = m.seasons || 1;
+            seasonSelect.innerHTML = '';
             for (let i = 1; i <= seasonsCount; i++) {
                 const option = document.createElement('option');
                 const seasonKey = `S${i}`;
@@ -763,30 +776,29 @@
                 seasonSelect.appendChild(option);
             }
             
-            // Display episodes for the first season by default
             displaySeasonEpisodes('S1'); 
 
         } else {
             seriesEpisodeContainer.style.display = 'none';
             movieLinksContainer.style.display = 'flex'; 
             
-            document.getElementById("playBtn").style.display = 'inline-block';
-            downloadBtn.style.display = 'inline-block'; // Show download for movie
+            playBtn.style.display = 'inline-block';
+            downloadBtn.style.display = 'inline-block'; 
             
             favoriteBtn.style.order = 3; 
             
             // Set up download button for movie
             downloadBtn.onclick = function() {
-                // Pass the movie's download link
                 showAdPopup(m.download, 10, false); 
             };
 
-            document.getElementById("playBtn").onclick = function () {
-                playMovie(m.play);
+            // Set up movie play button
+            playBtn.onclick = function () {
+                playMovie(m.play, key);
             };
         }
         
-        // Ensure the modal is explicitly set to display block
+        // 3. Show the detail modal
         document.getElementById("modal").style.display = "block";
     }
 
@@ -815,7 +827,7 @@
             item.innerHTML = `
                 <span class="ep-title">${episode.title}</span>
                 <div class="ep-actions">
-                    <button class="ep-play-btn" onclick="playMovie('${episode.link}')">Play</button>
+                    <button class="ep-play-btn" onclick="playMovie('${episode.link}', '${currentDetailMovieKey + seasonKey + epKey}')">Play</button>
                     <button class="ep-download-btn" onclick="showAdPopup('${currentDetailData.download}', 10, false)">Download</button>
                 </div>
             `;
@@ -825,45 +837,47 @@
 
 
     function closeDetail() {
-        document.getElementById("modal").style.display = "none";
-        currentDetailMovieKey = null; // Clear the current movie key
-        currentDetailData = null; // Clear the full data
-    }
-    
-    // Video Playback Functions
-    
-    // ✅ تبدیلی 2.1: ویڈیو کو فل سکرین میں کھولنے کا فنکشن
-    function openVideoPlayerFullScreen() {
-        const video = document.getElementById("videoPlayer");
-        if (video.requestFullscreen) {
-            video.requestFullscreen();
-        } else if (video.mozRequestFullScreen) { /* Firefox */
-            video.mozRequestFullScreen();
-        } else if (video.webkitRequestFullscreen) { /* Chrome, Safari and Opera */
-            video.webkitRequestFullscreen();
-        } else if (video.msRequestFullscreen) { /* IE/Edge */
-            video.msRequestFullscreen();
+        // 1. Pause video and save progress
+        const video = document.getElementById("inModalVideoPlayer");
+        if (video && !video.paused && currentVideoUrl) {
+            localStorage.setItem('videoProgress:' + currentVideoUrl, Math.floor(video.currentTime));
+            video.pause();
+            currentVideoUrl = null; 
         }
         
-        // Note: For device rotation, an app-level setting is usually needed. 
-        // This JavaScript only handles the browser's fullscreen mode. 
-        // We assume the user's device/browser will handle the rotation in fullscreen.
+        // 2. Hide the modal
+        document.getElementById("modal").style.display = "none";
+        document.getElementById("inModalPlayerContainer").style.display = 'none'; // Ensure player is hidden on close
+
+        currentDetailMovieKey = null; 
+        currentDetailData = null; 
     }
     
-    function playMovie(url) {
+    // 💥 UPDATED VIDEO PLAYBACK FUNCTION for Smooth Scroll 💥
+    /**
+     * Loads video into the in-modal player, shows it, and scrolls to the top.
+     * @param {string} url - Direct video play link.
+     * @param {string} key - Unique key for video progress saving (movie key or series key + episode key).
+     */
+    function playMovie(url, key) {
         if (!url || url === '#') {
             console.error("Play link is not available.");
             return;
         }
 
-        const video = document.getElementById("videoPlayer");
-        const source = document.getElementById("videoSource");
-
-        currentVideoUrl = url; 
+        const playerContainer = document.getElementById("inModalPlayerContainer");
+        const video = document.getElementById("inModalVideoPlayer");
+        const source = document.getElementById("inModalVideoSource");
+        // Pop-up کا سکول ایبل کنٹینر (#modal) 👈 یہ ضروری فکس ہے
+        const scrollContainer = document.getElementById("modal"); 
+        
+        // 1. Stop and load the video and restore progress
+        video.pause();
+        currentVideoUrl = key; // Use the unique key for progress tracking
         source.src = url;
         video.load();
         
-        const savedTime = localStorage.getItem('videoProgress:' + url);
+        const savedTime = localStorage.getItem('videoProgress:' + key);
         if (savedTime) {
             video.currentTime = parseFloat(savedTime);
             console.log(`Resuming video from: ${savedTime} seconds`);
@@ -871,48 +885,47 @@
             video.currentTime = 0;
         }
 
-        video.play();
-        document.getElementById("videoPopup").style.display = "flex";
+        // 2. Make the player visible
+        playerContainer.style.display = "block";
         
-        // ✅ تبدیلی 2.2: ویڈیو پلے ہونے کے بعد فل سکرین کھولیں 
+        // 3. Smoothly scroll the Pop-up container (#modal) to the top to show the player
+        scrollContainer.scrollTo({
+            top: 0, 
+            behavior: 'smooth' /* 👈 یہ سموتھ سکولنگ کو یقینی بناتا ہے */
+        });
+
+        // 4. Play and set event listener to save progress
+        video.play();
+        
+        video.ontimeupdate = function() {
+            if (!video.paused && !video.ended) {
+                 localStorage.setItem('videoProgress:' + key, Math.floor(video.currentTime)); 
+            }
+        };
+
+        // 5. Open fullscreen when video loads
         video.onloadeddata = function() {
             openVideoPlayerFullScreen();
         };
-
-        video.ontimeupdate = function() {
-            if (!video.paused && !video.ended) {
-                 localStorage.setItem('videoProgress:' + url, Math.floor(video.currentTime)); 
-            }
-        };
-    }
-
-    function closeVideo() {
-        const video = document.getElementById("videoPlayer");
-        
-        // Exit fullscreen if needed
-        if (document.exitFullscreen) {
-            document.exitFullscreen();
-        } else if (document.mozCancelFullScreen) { /* Firefox */
-            document.mozCancelFullScreen();
-        } else if (document.webkitExitFullscreen) { /* Chrome, Safari and Opera */
-            document.webkitExitFullscreen();
-        } else if (document.msExitFullscreen) { /* IE/Edge */
-            document.msExitFullscreen();
-        }
-        
-        if (video && !video.paused && currentVideoUrl) {
-            localStorage.setItem('videoProgress:' + currentVideoUrl, Math.floor(video.currentTime));
-            console.log(`Video stopped at: ${Math.floor(video.currentTime)} seconds. Saved.`);
-        }
-        
-        video.pause();
-        currentVideoUrl = null;
-
-        document.getElementById("videoPopup").style.display = "none";
     }
     
+    // Function for native fullscreen request (Unchanged)
+    function openVideoPlayerFullScreen() {
+        const video = document.getElementById("inModalVideoPlayer");
+        if (video.requestFullscreen) {
+            video.requestFullscreen();
+        } else if (video.mozRequestFullScreen) { 
+            video.mozRequestFullScreen();
+        } else if (video.webkitRequestFullscreen) { 
+            video.webkitRequestFullscreen();
+        } else if (video.msRequestFullscreen) { 
+            video.msRequestFullscreen();
+        }
+    }
+    
+    // Function to handle video progress saving when page closes (Unchanged)
     window.onbeforeunload = function() {
-        const video = document.getElementById("videoPlayer");
+        const video = document.getElementById("inModalVideoPlayer");
         if (video && !video.paused && currentVideoUrl) {
             localStorage.setItem('videoProgress:' + currentVideoUrl, Math.floor(video.currentTime));
         }
@@ -920,7 +933,7 @@
     // End Video Playback Functions
 
 
-    // --- Other Functions ---
+    // --- Other Functions (Unchanged) ---
     
     function showCategoriesOverlay(element) {
         document.querySelectorAll('.nav-item-btn').forEach(item => item.classList.remove('active'));
@@ -959,7 +972,6 @@
         });
     }
 
-    // ✅ تبدیلی 1.4: loadAllMovies کو اپڈیٹ کیا گیا تاکہ یہ فلٹر سیٹ کرے اور ضرورت پڑنے پر ایلیمنٹ کو Active کرے۔
     function loadAllMovies(element = null) {
         spinner.style.display = 'block';
         grid.innerHTML = '';
@@ -971,7 +983,6 @@
                 content.key = childSnapshot.key;
                 content.type = content.type || (content.episodes ? 'series' : 'movie');
                 
-                // Ensure download link is set for the ad popup later
                 if (!content.download) {
                     content.download = getRandomAdLink();
                 }
@@ -983,15 +994,12 @@
 
             spinner.style.display = 'none';
             
-            // اگر 'element' پاس کیا گیا ہے، تو اسے Home بٹن سمجھ کر 'all' فلٹر سیٹ کریں
-            // ورنہ، پہلے سے موجود Home بٹن کو تلاش کر کے اسے استعمال کریں۔
-            if (element && element.tagName !== 'H1') { // H1 کے لیے setFilter کال نہیں کرنا تاکہ وہ صرف ڈیٹا ریفریش کرے۔
+            if (element && element.tagName !== 'H1') { 
                 setFilter('all', element);
             } else {
                  setFilter('all', document.querySelector('.nav-item-btn[data-target="all"]'));
             }
             
-            // سرچ بار کو صاف کریں
             document.getElementById('searchBar').value = '';
             
             console.log("Movie data reloaded and Home filter applied.");
@@ -999,43 +1007,29 @@
     }
 
 
-    /**
-     * 🐛 ہینگ فکس (1/2): سرچ بار کے ان پٹ کو Debounce کرتا ہے۔
-     */
     function debounceFilter() {
-        // پچھلے ٹائمر کو کلیئر کریں
         clearTimeout(searchTimeout); 
-        
-        // 300ms کے بعد سرچ فنکشن کال کریں
         searchTimeout = setTimeout(searchMoviesAndRender, 300);
     }
     
-    /**
-     * 🐛 ہینگ فکس (2/2): موویز کو فلٹر کرتا ہے اور رینڈر کرتا ہے۔
-     * اب یہ DOM میں موجود کارڈز کو چھپانے کے بجائے filteredMovies Array پر کام کرتا ہے۔
-     */
     function searchMoviesAndRender() {
         const filterText = searchBar.value.trim().toUpperCase();
         
         if (filterText === '') {
-            // اگر سرچ بار خالی ہے، تو موجودہ فلٹر کو دوبارہ لگائیں
             setFilter('all', document.querySelector('.nav-item-btn[data-target="all"]'));
             return;
         }
 
         currentFilterType = 'search';
         
-        // 1. سرچ کے ٹیکسٹ کی بنیاد پر موویز کو فلٹر کریں (allMovies میں سے)
         filteredMovies = allMovies.filter(movie => {
              return movie.title.toUpperCase().includes(filterText);
         });
 
-        // 2. پیجنگ کو دوبارہ سیٹ کریں اور رینڈر کریں
         totalPages = Math.ceil(filteredMovies.length / MOVIES_PER_PAGE);
         currentPage = 1;
         renderPage(currentPage);
 
-        // 3. نیویگیشن بٹنوں کو غیر فعال کریں
         document.querySelectorAll('.nav-item-btn').forEach(item => item.classList.remove('active'));
         paginationControls.style.display = 'none';
     }
@@ -1043,7 +1037,6 @@
 
     /**
      * Hides the ad popup and handles post-ad actions.
-     * @param {boolean} isInitialLoad - True if this is the first load ad (20s), false otherwise (10s download ad).
      */
     function hideAdPopup(isInitialLoad = true) {
         document.getElementById('adPopup').style.display = 'none';
@@ -1053,16 +1046,13 @@
         } else {
             // After 10s download ad, return to the detail screen 
             if (currentDetailMovieKey) {
-                // Re-open the detail popup with the saved key
-                openDetail(currentDetailMovieKey); 
-                
+                openDetail(currentDetailMovieKey); // Re-open the detail popup with the saved key
                 // Scroll to the top of the detail modal
                 const modalContent = document.querySelector('.detail-content');
                 if (modalContent) {
                     modalContent.scrollTop = 0;
                 }
             } else {
-                 // Fallback to show the modal if key is somehow lost but modal was hidden
                  document.getElementById("modal").style.display = "block";
             }
         }
@@ -1070,9 +1060,6 @@
 
     /**
      * Shows the ad popup with a specified link and duration.
-     * @param {string} url - The URL to load in the iframe. Uses a random ad link if null/undefined.
-     * @param {number} duration - The duration in seconds for the countdown. (Set to 20 for initial load).
-     * @param {boolean} isInitialLoad - True if this is the first load ad (20s), false for download ad (10s).
      */
     function showAdPopup(url = getRandomAdLink(), duration = 20, isInitialLoad = true) { 
         if (!url || url === '#') {
@@ -1105,18 +1092,15 @@
         }, 1000);
     }
     
-    // مواد (موویز) لوڈ کرنے کا کام یہاں فوراً ہو گا، اور پاپ اپ صرف ٹائمر کے بعد ظاہر ہو گا۔
+    // Initial Load Logic (Unchanged)
     window.onload = function() {
-        // 1. مرکزی مواد (موویز) کو فوراً لوڈ کریں
         loadAllMovies(); 
         
         console.log("Page loaded. Content loading immediately. Starting 10-second delay before initial ad popup...");
         
-        // 2. 10 سیکنڈ کی تاخیر کے بعد پاپ اپ کو ظاہر کریں (20 سیکنڈ کی مدت کے ساتھ)
         setTimeout(() => {
-            // 20 سیکنڈ کی مدت کا پاپ اپ ظاہر ہو گا
             showAdPopup(getRandomAdLink(), 20, true); 
-        }, 10000); // 10000 milliseconds = 10 seconds delay
+        }, 10000); 
     };
 
 </script>
