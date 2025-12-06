@@ -637,7 +637,8 @@
     }
     
     function renderPage(pageNumber) {
-        document.getElementById("pageHeader").scrollIntoView({ behavior: 'smooth' });
+        // 💥 تبدیلی: scrollIntoView کو یہاں سے ہٹا دیا گیا ہے
+        // document.getElementById("pageHeader").scrollIntoView({ behavior: 'smooth' }); 
 
         const moviesArray = filteredMovies; 
         const start = (pageNumber - 1) * MOVIES_PER_PAGE;
@@ -677,12 +678,27 @@
         nextBtn.disabled = pageNumber === totalPages;
     }
 
+    // 💥 تبدیل شدہ فنکشن: goToPage 💥
     function goToPage(direction) {
         const newPage = currentPage + direction;
         
         if (newPage >= 1 && newPage <= totalPages) {
-            currentPage = newPage;
-            renderPage(currentPage);
+            
+            // 1. لوڈنگ سپنر دکھائیں اور گرڈ کو خالی کریں
+            spinner.style.display = 'block';
+            grid.innerHTML = ''; 
+
+            // 2. 0.5 سیکنڈ (500ms) کے بعد مواد لوڈ کریں اور سکرول کریں
+            setTimeout(() => {
+                currentPage = newPage;
+                renderPage(currentPage);
+                
+                // 3. لوڈنگ سپنر کو چھپائیں
+                spinner.style.display = 'none';
+
+                // 4. صفحے کو ٹاپ پر سکرول کریں (سموتھ سکرولنگ)
+                document.getElementById("pageHeader").scrollIntoView({ behavior: 'smooth' });
+            }, 500); 
         }
     }
 
@@ -909,7 +925,7 @@
         const playerContainer = document.getElementById("inModalPlayerContainer");
         const video = document.getElementById("inModalVideoPlayer");
         const source = document.getElementById("inModalVideoSource");
-        // Pop-up کا سکول ایبل کنٹینر (#modal) 👈 یہ ضروری فکس ہے
+        // Pop-up کا سکول ایبل کنٹینر (#modal) 
         const scrollContainer = document.getElementById("modal"); 
         
         // 1. Stop and load the video and restore progress
@@ -932,7 +948,7 @@
         // 3. Smoothly scroll the Pop-up container (#modal) to the top to show the player
         scrollContainer.scrollTo({
             top: 0, 
-            behavior: 'smooth' /* 👈 یہ سموتھ سکولنگ کو یقینی بناتا ہے */
+            behavior: 'smooth' 
         });
 
         // 4. Play and set event listener to save progress
