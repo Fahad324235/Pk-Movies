@@ -37,7 +37,7 @@
             -webkit-background-clip: text;
             color: transparent;
             font-size: 32px;
-            cursor: pointer; /* ✅ تبدیلی 1.1: کرسر کو پوائینٹر بنایا گیا */
+            cursor: pointer; 
         }
 
        #searchBar {
@@ -391,7 +391,7 @@
 
 <body> 
 <div class="header" id="pageHeader">
-    <h1 onclick="loadAllMovies()">Pk Movies</h1> <input type="text" id="searchBar" onkeyup="filterMovies()" placeholder="Search Movie...">
+    <h1 onclick="loadAllMovies()">Pk Movies</h1> <input type="text" id="searchBar" onkeyup="debounceFilter()" placeholder="Search Movie...">
 </div>
 
 
@@ -516,6 +516,7 @@
     const prevBtn = document.getElementById("prevBtn");
     const nextBtn = document.getElementById("nextBtn");
     const paginationControls = document.querySelector('.pagination-controls');
+    const searchBar = document.getElementById('searchBar');
     
     // Pagination Variables
     const MOVIES_PER_PAGE = 10;
@@ -525,6 +526,9 @@
     let currentPage = 1;
     let totalPages = 1;
     
+    // ⏳ Debouncing Variable for Search Fix
+    let searchTimeout = null; 
+
     // Ad Links Array
     const adLinks = [
         "https://www.effectivegatecpm.com/yz4z5szmf?key=73186bcddd33133e4b3c585292f10bde",
@@ -560,7 +564,11 @@
     
     function setFilter(filter, element) {
         closeDetail(); 
-
+        
+        // Clear search bar and reset filter-related timeout
+        searchBar.value = '';
+        clearTimeout(searchTimeout); 
+        
         document.querySelectorAll('.nav-item-btn').forEach(item => item.classList.remove('active'));
         if(element) element.classList.add('active');
         
@@ -591,7 +599,7 @@
         renderPage(currentPage);
         
         // Show/Hide Pagination
-        if (totalPages <= 1 || filter === 'favorites') { 
+        if (totalPages <= 1 || filter === 'favorites' || currentFilterType === 'search') { 
             paginationControls.style.display = 'none';
         } else {
             paginationControls.style.display = 'flex';
@@ -612,7 +620,10 @@
              let message = '';
              if (currentFilterType === 'favorites') {
                 message = `Your **Favorites** list is empty. Add a movie or series by clicking "Add to Favorites" in the detail screen.`;
-             } else {
+             } else if (currentFilterType === 'search') {
+                 message = `No results found for **${searchBar.value}**.`;
+             }
+             else {
                  const filterName = currentFilterType.charAt(0).toUpperCase() + currentFilterType.slice(1);
                  message = `No **${filterName}** content found.`;
              }
@@ -988,24 +999,47 @@
     }
 
 
-    function filterMovies() {
-        const filterText = document.getElementById('searchBar').value.toUpperCase();
-        const cards = document.querySelectorAll('.movie-card');
+    /**
+     * 🐛 ہینگ فکس (1/2): سرچ بار کے ان پٹ کو Debounce کرتا ہے۔
+     */
+    function debounceFilter() {
+        // پچھلے ٹائمر کو کلیئر کریں
+        clearTimeout(searchTimeout); 
         
-        let visibleCount = 0;
-        cards.forEach(card => {
-            const title = card.getAttribute('data-title').toUpperCase();
-
-            if (title.includes(filterText)) {
-                card.style.display = "";
-                visibleCount++;
-            } else {
-                card.style.display = "none";
-            }
-        });
-        
-        paginationControls.style.display = filterText ? 'none' : (totalPages > 1 ? 'flex' : 'none');
+        // 300ms کے بعد سرچ فنکشن کال کریں
+        searchTimeout = setTimeout(searchMoviesAndRender, 300);
     }
+    
+    /**
+     * 🐛 ہینگ فکس (2/2): موویز کو فلٹر کرتا ہے اور رینڈر کرتا ہے۔
+     * اب یہ DOM میں موجود کارڈز کو چھپانے کے بجائے filteredMovies Array پر کام کرتا ہے۔
+     */
+    function searchMoviesAndRender() {
+        const filterText = searchBar.value.trim().toUpperCase();
+        
+        if (filterText === '') {
+            // اگر سرچ بار خالی ہے، تو موجودہ فلٹر کو دوبارہ لگائیں
+            setFilter('all', document.querySelector('.nav-item-btn[data-target="all"]'));
+            return;
+        }
+
+        currentFilterType = 'search';
+        
+        // 1. سرچ کے ٹیکسٹ کی بنیاد پر موویز کو فلٹر کریں (allMovies میں سے)
+        filteredMovies = allMovies.filter(movie => {
+             return movie.title.toUpperCase().includes(filterText);
+        });
+
+        // 2. پیجنگ کو دوبارہ سیٹ کریں اور رینڈر کریں
+        totalPages = Math.ceil(filteredMovies.length / MOVIES_PER_PAGE);
+        currentPage = 1;
+        renderPage(currentPage);
+
+        // 3. نیویگیشن بٹنوں کو غیر فعال کریں
+        document.querySelectorAll('.nav-item-btn').forEach(item => item.classList.remove('active'));
+        paginationControls.style.display = 'none';
+    }
+
 
     /**
      * Hides the ad popup and handles post-ad actions.
