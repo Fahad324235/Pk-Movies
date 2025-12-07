@@ -473,8 +473,8 @@
         
         <h2 id="modalTitle"></h2>
         <div id="modalInfo">
-           <span id="modalYear">Year: N/A</span>
-            <span id="modalRating"><i class="fas fa-star" style="color: #ffc107;"></i>Rating: N/A</span>
+            <span id="modalRating"><i class="fas fa-star" style="color: #ffc107;"></i> IMDb Rating: N/A</span>
+            <span id="modalYear">Year: N/A</span>
             <span id="modalGenres">Genres: N/A</span>
         </div>
         <p id="modalDesc"></p>
@@ -574,8 +574,8 @@
     
     // Pagination Variables
     const MOVIES_PER_PAGE = 10;
-    let allContent = []; // Merged array for all movies/series from 'movies' ref AND 'popular_movies' ref
-    let popularContent = []; // Separate array for popular content (for popular tab)
+    let allContent = []; // Merged array for all movies/series from 'movies' ref
+    let popularContent = []; // New array for popular content
     let filteredMovies = []; 
     let currentFilterType = 'all'; 
     let currentPage = 1;
@@ -646,27 +646,24 @@
     }
 
 
-    // --- Filter Logic (MODIFIED) ---
+    // --- Filter Logic (Modified for Popular and Universal Loading) ---
     
     function setFilter(filter) {
         if (filter === 'all') {
-            // Use allContent, which now includes both standard and popular
-            filteredMovies = [...allContent]; 
+            // Merge all content and popular content for the 'all' view
+            filteredMovies = [...allContent, ...popularContent]; 
         } else if (filter === 'movie') {
-            // Filter all content for movies (including popular ones that are movies)
-            filteredMovies = allContent.filter(m => m.type === 'movie');
+            filteredMovies = allContent.filter(m => m.type === 'movie' && !m.isPopular);
         } else if (filter === 'series') {
-            // Filter all content for series (including popular ones that are series)
-            filteredMovies = allContent.filter(m => m.type === 'series');
+            filteredMovies = allContent.filter(m => m.type === 'series' && !m.isPopular);
         } else if (filter === 'popular') { // 🆕 NEW Popular Filter
-             // Only show content explicitly loaded as popular
              filteredMovies = popularContent;
         } else if (filter === 'favorites') { 
              filteredMovies = getFavoritesMovies();
         } 
         else {
-            // Category filter - filter all content by category
-            filteredMovies = allContent.filter(m => m.category === filter);
+            // Category filter
+            filteredMovies = [...allContent, ...popularContent].filter(m => m.category === filter);
         }
         
         totalPages = Math.ceil(filteredMovies.length / MOVIES_PER_PAGE);
@@ -705,11 +702,7 @@
         } else {
             moviesToShow.forEach((movie) => {
                 const categoryText = movie.category || 'Other'; 
-                // Determine display type (Popular tag is now added to the type if present)
-                let typeText = movie.type === 'series' ? 'Web Series' : 'Movie';
-                if (movie.isPopular) {
-                    typeText = `Popular / ${typeText}`;
-                }
+                const typeText = movie.isPopular ? 'Popular' : (movie.type === 'series' ? 'Web Series' : 'Movie'); // Check for isPopular flag
                 
                 grid.innerHTML += `
                     <div class="movie-card" onclick="openDetail('${movie.key}', '${movie.isPopular ? 'popular' : 'content'}')" data-title="${movie.title}" data-category="${categoryText}">
@@ -756,8 +749,8 @@
 
     function getFavoritesMovies() {
         const favoriteKeys = getFavorites();
-        // Search in allContent (which includes popularContent now)
-        return allContent.filter(movie => favoriteKeys.includes(movie.key));
+        // Search in both content arrays
+        return [...allContent, ...popularContent].filter(movie => favoriteKeys.includes(movie.key));
     }
 
     function isFavorite(movieKey) {
@@ -789,14 +782,19 @@
     
 
     function openDetail(key, contentSource = 'content') {
-        // Since allContent now holds everything, we just search there
-        const m = allContent.find(movie => movie.key === key);
+        const dataArray = contentSource === 'popular' ? popularContent : allContent;
+        const m = dataArray.find(movie => movie.key === key);
 
         if (!m) {
-             return;
-        } 
-        currentDetailData = m;
-        
+             // If not found in the initial array, check the other one, just in case (e.g., from favorites)
+             const secondaryArray = contentSource === 'popular' ? allContent : popularContent;
+             const secondaryM = secondaryArray.find(movie => movie.key === key);
+             if (!secondaryM) return;
+             currentDetailData = secondaryM;
+        } else {
+             currentDetailData = m;
+        }
+
         // 1. Hide the player first before showing details
         const playerContainer = document.getElementById("inModalPlayerContainer");
         playerContainer.style.display = 'none';
@@ -817,7 +815,7 @@
         
         // 🆕 NEW IMDb Rating Display
         const rating = currentDetailData.rating ? parseFloat(currentDetailData.rating).toFixed(1) : 'N/A';
-        document.getElementById("modalRating").innerHTML = `<i class="fas fa-star" style="color: #ffc107;"></i>Rating: ${rating}`;
+        document.getElementById("modalRating").innerHTML = `<i class="fas fa-star" style="color: #ffc107;"></i> IMDb Rating: ${rating}`;
         document.getElementById("modalYear").innerText = `Year: ${currentDetailData.year || 'N/A'}`;
         document.getElementById("modalGenres").innerText = `Genres: ${currentDetailData.genres || 'N/A'}`;
 
@@ -1072,7 +1070,7 @@
         });
     }
 
-    // --- Data Fetching and Initialization (MODIFIED) ---
+    // --- Data Fetching and Initialization (Modified to include Popular) ---
     async function loadAllContent() {
         spinner.style.display = 'block';
         grid.innerHTML = '';
@@ -1091,8 +1089,10 @@
                     content.download = getRandomAdLink();
                 }
 
-                // Add all main content to allContent
-                allContent.push(content);
+                // If content is explicitly marked as popular, do NOT add it to allContent
+                if (!content.isPopular) { 
+                    allContent.push(content);
+                }
             });
             
             // 2. Load Popular Content
@@ -1107,16 +1107,7 @@
                     content.download = getRandomAdLink();
                  }
                  
-                 // Add popular content to its separate array (for 'popular' tab)
                  popularContent.push(content);
-                 
-                 // ADD POPULAR CONTENT TO ALL CONTENT FOR 'ALL', 'MOVIE', 'SERIES' TABS
-                 // Only add if it's not already there (based on key), though in Firebase RTDB popular_movies keys might differ.
-                 // Assuming separate keys, we add them directly to allContent to make them available in other filters.
-                 const isAlreadyInAllContent = allContent.some(item => item.key === content.key);
-                 if (!isAlreadyInAllContent) {
-                     allContent.push(content);
-                 }
             });
             
             // Reverse both arrays to show newest first
@@ -1126,7 +1117,7 @@
             spinner.style.display = 'none';
             handleNavClick('all', document.querySelector('.nav-item-btn[data-target="all"]'));
             
-            console.log(`Content loaded: ${allContent.length} combined (standard + popular), ${popularContent.length} popular.`);
+            console.log(`Content loaded: ${allContent.length} standard, ${popularContent.length} popular.`);
 
         } catch (error) {
             console.error("Error loading data from Firebase:", error);
@@ -1152,7 +1143,7 @@
         currentFilterType = 'search';
         
         // Search in all available content
-        filteredMovies = allContent.filter(movie => {
+        filteredMovies = [...allContent, ...popularContent].filter(movie => {
              return movie.title.toUpperCase().includes(filterText);
         });
 
