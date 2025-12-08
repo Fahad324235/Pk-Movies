@@ -117,7 +117,7 @@
         .movie-card p {  
             padding: 10px 10px 5px 10px; 
             text-align: left; 
-            font-size: 18px; 
+            font-size: 12px; 
             font-weight: 900; 
             color: #fff;  
             margin: 0;  
@@ -562,7 +562,7 @@
     firebase.initializeApp(firebaseConfig);
     const database = firebase.database();
     const moviesRef = database.ref('movies'); 
-    const popularRef = database.ref('popular_movies'); // 🆕 NEW REF
+    const popularRef = database.ref('popular_movies'); 
     const categoryRef = database.ref('categories'); 
 
     const grid = document.getElementById("movieGrid");
@@ -574,8 +574,8 @@
     
     // Pagination Variables
     const MOVIES_PER_PAGE = 10;
-    let allContent = []; // Merged array for all movies/series from 'movies' ref
-    let popularContent = []; // New array for popular content
+    let allContent = []; 
+    let popularContent = []; 
     let filteredMovies = []; 
     let currentFilterType = 'all'; 
     let currentPage = 1;
@@ -614,39 +614,34 @@
     let currentDetailData = null; 
     let currentDetailMovieKey = null; 
 
-    // --- Universal Navigation Handler (Point 3) ---
+    // --- Universal Navigation Handler ---
     function handleNavClick(filter, element) {
-         if (filter === 'categories') return; // Handled by showCategoriesOverlay
+         if (filter === 'categories') return; 
 
-         // 1. Show loading spinner and clear grid
          spinner.style.display = 'block';
          grid.innerHTML = ''; 
          paginationControls.style.display = 'none';
 
-         // 2. Remove active class from all and add to current
          document.querySelectorAll('.nav-item-btn').forEach(item => item.classList.remove('active'));
          if(element) element.classList.add('active');
 
-         // 3. Clear search and close detail/overlay
          searchBar.value = '';
          clearTimeout(searchTimeout); 
          closeDetail();
          closeCategoriesOverlay();
 
-         // 4. Set new filter and wait 500ms before rendering (for smooth animation)
          currentFilterType = filter;
          
          setTimeout(() => {
             setFilter(filter);
 
-            // 5. Hide spinner and scroll to top
             spinner.style.display = 'none';
             document.getElementById("pageHeader").scrollIntoView({ behavior: 'smooth' });
          }, 500);
     }
 
 
-    // --- Filter Logic (Modified for Popular and Universal Loading) ---
+    // --- Filter Logic ---
     
     function setFilter(filter) {
         if (filter === 'all') {
@@ -656,7 +651,7 @@
             filteredMovies = allContent.filter(m => m.type === 'movie' && !m.isPopular);
         } else if (filter === 'series') {
             filteredMovies = allContent.filter(m => m.type === 'series' && !m.isPopular);
-        } else if (filter === 'popular') { // 🆕 NEW Popular Filter
+        } else if (filter === 'popular') { 
              filteredMovies = popularContent;
         } else if (filter === 'favorites') { 
              filteredMovies = getFavoritesMovies();
@@ -670,7 +665,6 @@
         currentPage = 1;
         renderPage(currentPage);
         
-        // Show pagination only if filter is not search, has more than 1 page, and is not a category filter (Categories usually render all)
         if (totalPages > 1 && currentFilterType !== 'search' && !Object.values(defaultCategories).includes(currentFilterType)) { 
             paginationControls.style.display = 'flex';
         } else {
@@ -678,12 +672,12 @@
         }
     }
     
-    // --- Render Page (Point 4 - Lazy Loading/Rendering) ---
+    // --- Render Page ---
     function renderPage(pageNumber) {
         const moviesArray = filteredMovies; 
         const start = (pageNumber - 1) * MOVIES_PER_PAGE;
         const end = start + MOVIES_PER_PAGE;
-        const moviesToShow = moviesArray.slice(start, end); // Only render MOVIES_PER_PAGE items
+        const moviesToShow = moviesArray.slice(start, end); 
 
         grid.innerHTML = '';
         
@@ -702,7 +696,7 @@
         } else {
             moviesToShow.forEach((movie) => {
                 const categoryText = movie.category || 'Other'; 
-                const typeText = movie.isPopular ? 'Popular' : (movie.type === 'series' ? 'Web Series' : 'Movie'); // Check for isPopular flag
+                const typeText = movie.isPopular ? 'Popular' : (movie.type === 'series' ? 'Web Series' : 'Movie'); 
                 
                 grid.innerHTML += `
                     <div class="movie-card" onclick="openDetail('${movie.key}', '${movie.isPopular ? 'popular' : 'content'}')" data-title="${movie.title}" data-category="${categoryText}">
@@ -718,7 +712,7 @@
         nextBtn.disabled = pageNumber === totalPages;
     }
 
-    // 💥 تبدیل شدہ فنکشن: goToPage (Point 3) 💥
+    // --- goToPage ---
     function goToPage(direction) {
         const newPage = currentPage + direction;
         
@@ -733,9 +727,8 @@
                 
                 spinner.style.display = 'none';
 
-                // Scroll the page to the top
                 document.getElementById("pageHeader").scrollIntoView({ behavior: 'smooth' });
-            }, 500); // 0.5 second delay for animation effect
+            }, 500); 
         }
     }
 
@@ -749,7 +742,6 @@
 
     function getFavoritesMovies() {
         const favoriteKeys = getFavorites();
-        // Search in both content arrays
         return [...allContent, ...popularContent].filter(movie => favoriteKeys.includes(movie.key));
     }
 
@@ -778,22 +770,20 @@
         }
     }
 
-    // --- Detail and Play Functions (UPDATED) ---
+    // --- Detail and Play Functions (UPDATED FOR BETTER SEASON HANDLING) ---
     
 
     function openDetail(key, contentSource = 'content') {
         const dataArray = contentSource === 'popular' ? popularContent : allContent;
-        const m = dataArray.find(movie => movie.key === key);
+        let m = dataArray.find(movie => movie.key === key);
 
         if (!m) {
-             // If not found in the initial array, check the other one, just in case (e.g., from favorites)
              const secondaryArray = contentSource === 'popular' ? allContent : popularContent;
-             const secondaryM = secondaryArray.find(movie => movie.key === key);
-             if (!secondaryM) return;
-             currentDetailData = secondaryM;
-        } else {
-             currentDetailData = m;
-        }
+             m = secondaryArray.find(movie => movie.key === key);
+             if (!m) return;
+        } 
+        currentDetailData = m;
+
 
         // 1. Hide the player first before showing details
         const playerContainer = document.getElementById("inModalPlayerContainer");
@@ -850,7 +840,7 @@
             otherDownloadBtn.style.display = 'none';
         }
 
-
+        // 💥 UPDATED SERIES HANDLING BLOCK 💥
         if (currentDetailData.type === 'series') {
             movieLinksContainer.style.display = 'block'; 
             seriesEpisodeContainer.style.display = 'block';
@@ -860,24 +850,29 @@
             
             favoriteBtn.style.order = 1;
             
-            // Populate Season Dropdown
+            // Populate Season Dropdown and set to S1 (or the first available)
             const seasonsCount = currentDetailData.seasons || 1;
             seasonSelect.innerHTML = '';
+            let firstAvailableSeasonKey = null;
+
             for (let i = 1; i <= seasonsCount; i++) {
-                const option = document.createElement('option');
                 const seasonKey = `S${i}`;
+                const option = document.createElement('option');
                 option.value = seasonKey;
                 option.innerText = `Season ${i}`;
                 seasonSelect.appendChild(option);
+
+                if (currentDetailData.episodes && currentDetailData.episodes[seasonKey] && !firstAvailableSeasonKey) {
+                    firstAvailableSeasonKey = seasonKey; // Set the first season that actually has episodes
+                }
             }
             
-            // Check if episodes data exists before displaying
-            const firstSeasonKey = 'S1';
-            if (currentDetailData.episodes && currentDetailData.episodes[firstSeasonKey]) {
-                displaySeasonEpisodes(firstSeasonKey); 
-            } else {
-                 document.getElementById("episodeList").innerHTML = `<p style="color: #ffc107;">No episodes found for this series.</p>`;
-            }
+            // Default to S1 if no episodes were found, otherwise use the first one found
+            const initialSeasonKey = firstAvailableSeasonKey || 'S1'; 
+            seasonSelect.value = initialSeasonKey; // Set the dropdown value
+
+            // Load episodes for the initially selected season
+            displaySeasonEpisodes(initialSeasonKey); 
 
 
         } else {
@@ -910,7 +905,7 @@
         episodeList.innerHTML = '';
         
         if (!currentDetailData || !currentDetailData.episodes || !currentDetailData.episodes[seasonKey]) {
-            episodeList.innerHTML = `<p style="color: #ffc107;">No episodes found for ${seasonKey}.</p>`;
+            episodeList.innerHTML = `<p style="color: #ffc107;">No episodes found for ${seasonKey.replace('S', 'Season ')}.</p>`;
             return;
         }
 
@@ -1070,7 +1065,7 @@
         });
     }
 
-    // --- Data Fetching and Initialization (Modified to include Popular) ---
+    // --- Data Fetching and Initialization ---
     async function loadAllContent() {
         spinner.style.display = 'block';
         grid.innerHTML = '';
@@ -1089,7 +1084,6 @@
                     content.download = getRandomAdLink();
                 }
 
-                // If content is explicitly marked as popular, do NOT add it to allContent
                 if (!content.isPopular) { 
                     allContent.push(content);
                 }
@@ -1101,7 +1095,7 @@
                  const content = childSnapshot.val();
                  content.key = childSnapshot.key;
                  content.type = content.type || 'movie'; 
-                 content.isPopular = true; // Ensure the flag is set
+                 content.isPopular = true; 
                  
                  if (!content.download) {
                     content.download = getRandomAdLink();
