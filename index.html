@@ -470,6 +470,7 @@
     
     let currentDetailData = null; 
     let currentDetailMovieKey = null;
+    let currentPlaybackID = null; // New variable to track the current playing item's ID for Local Storage
 
     // --- ADS LIST (Updated with your new links) ---
     const adLinks = [
@@ -486,6 +487,7 @@
     // --- INITIALIZATION ---
     window.onload = function() {
         loadData();
+        setupVideoEvents(); // New function call
         // Initial Ad Popup
         setTimeout(() => { showAdPopup(null, 0); }, 10000); 
     };
@@ -696,7 +698,8 @@
             downloadBtn.style.display = 'block';
             seriesContainer.style.display = 'none';
 
-            playBtn.onclick = () => playVideo(movie.play);
+            // Pass key as the playback ID for movies
+            playBtn.onclick = () => playVideo(movie.play, key);
             downloadBtn.onclick = () => showAdPopup(movie.download, 10);
         }
 
@@ -712,26 +715,81 @@
         video.removeAttribute('src'); 
         video.load(); 
         document.getElementById("inModalPlayerContainer").style.display = 'none';
-
+        currentPlaybackID = null; // Clear playback ID
+        
         modal.style.display = "none";
         currentDetailData = null;
     }
 
-    // --- VIDEO PLAYER ---
-    function playVideo(url) {
+    // --- VIDEO PLAYER (MODIFIED) ---
+    function playVideo(url, playbackID) {
         if(!url) return alert("Link not available");
         
         const container = document.getElementById("inModalPlayerContainer");
         const video = document.getElementById("inModalVideoPlayer");
         
+        currentPlaybackID = playbackID; // Set the current playing item's unique ID
+        
         container.style.display = 'block';
         video.src = url;
         video.load();
-        video.play().catch(e => console.log("Play error", e));
+
+        // Check Local Storage for saved time
+        video.onloadeddata = () => {
+             if (video.readyState >= 2) {
+                const savedTime = localStorage.getItem(`playback_${currentPlaybackID}`);
+                if (savedTime) {
+                    // Start 5 seconds before saved time to avoid missing content due to background pause timing
+                    const startTime = Math.max(0, parseFloat(savedTime) - 5); 
+                    video.currentTime = startTime;
+                    console.log(`Resuming video at ${startTime.toFixed(2)} seconds.`);
+                }
+                video.play().catch(e => console.log("Play error", e));
+             }
+        };
 
         // Scroll to top of modal to see player
         document.getElementById("modal").scrollTo({ top: 0, behavior: 'smooth' });
     }
+
+    // --- VIDEO EVENT HANDLERS (NEW FUNCTION) ---
+    function setupVideoEvents() {
+        const video = document.getElementById("inModalVideoPlayer");
+        
+        // 1. Save playback position every 5 seconds
+        video.ontimeupdate = debounce(() => {
+            if (currentPlaybackID && !video.paused && !video.ended) {
+                // Save current time
+                localStorage.setItem(`playback_${currentPlaybackID}`, video.currentTime.toFixed(2));
+            }
+        }, 5000); // 5 seconds debounce
+
+        // 2. Save position on pause
+        video.onpause = () => {
+            if (currentPlaybackID && !video.ended) {
+                localStorage.setItem(`playback_${currentPlaybackID}`, video.currentTime.toFixed(2));
+            }
+        };
+
+        // 3. Clear position on end/completion
+        video.onended = () => {
+            if (currentPlaybackID) {
+                localStorage.removeItem(`playback_${currentPlaybackID}`);
+                currentPlaybackID = null;
+            }
+        };
+    }
+    
+    // Simple debounce utility function
+    function debounce(func, wait) {
+        let timeout;
+        return function(...args) {
+            const context = this;
+            clearTimeout(timeout);
+            timeout = setTimeout(() => func.apply(context, args), wait);
+        };
+    }
+
 
     // --- SERIES EPISODES (FIX APPLIED HERE) ---
     function displaySeasonEpisodes(season) {
@@ -747,12 +805,14 @@
         // Sort keys ep_1, ep_2...
         Object.keys(eps).sort((a,b) => parseInt(a.slice(3)) - parseInt(b.slice(3))).forEach(key => {
             const ep = eps[key];
+            const playbackID = `${currentDetailMovieKey}_${season}_${key}`; // Unique ID for series episodes
+            
             const div = document.createElement("div");
             div.className = "episode-item";
             div.innerHTML = `
                 <span>${ep.title}</span>
                 <div class="ep-actions">
-                    <button class="ep-play" onclick="playVideo('${ep.link}')">Play</button>
+                    <button class="ep-play" onclick="playVideo('${ep.link}', '${playbackID}')">Play</button>
                     <button class="ep-down" onclick="showAdPopup(null, 10)">Dawnload</button> 
                 </div>
             `;
@@ -878,3 +938,4 @@
 </script>
 </body>
 </html>
+
