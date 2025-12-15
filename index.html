@@ -192,7 +192,15 @@
         .page-btn { background: #ff4d4d; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; }
         .page-btn:disabled { background: #444; cursor: not-allowed; color: #888; }
         #loadingSpinner { display: none; text-align: center; padding: 50px; }
-        .spinner { border: 5px solid #333; border-top: 5px solid #ff8c1a; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 20px auto; }
+        .spinner { 
+            border: 5px solid #333; 
+            border-top: 5px solid #ff8c1a; 
+            border-radius: 50%; 
+            width: 40px; 
+            height: 40px; 
+            animation: spin 1s linear infinite; 
+            margin: 20px auto; 
+        }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
         /* --- MODALS (Detail, Categories, Request) --- */
@@ -230,7 +238,7 @@
         #inModalPlayerContainer {
             width: 100%;
             background: #000;
-            margin-bottom: 15px;
+            margin-bottom: 5px; /* Reduced margin */
             display: none; 
             position: relative;
         }
@@ -360,10 +368,12 @@
         <div class="close-btn-fixed" onclick="closeDetail()">&times;</div>
         
         <div id="inModalPlayerContainer">
-            <video id="inModalVideoPlayer" controls playsinline preload="none">
+            <video id="inModalVideoPlayer" controls playsinline preload="metadata">
                 <source id="inModalVideoSource" src="">
             </video>
         </div>
+        
+        <div id="playbackInfo" style="color: #00bcd4; font-size: 14px; text-align: center; margin-bottom: 15px; font-weight: bold; display: none;"></div>
         
         <img id="modalImg" src="">
         <h2 id="modalTitle"></h2>
@@ -460,6 +470,7 @@
     const grid = document.getElementById("movieGrid");
     const spinner = document.getElementById("loadingSpinner");
     const paginationControls = document.querySelector('.pagination-controls');
+    const videoPlayer = document.getElementById("inModalVideoPlayer"); 
     
     let allContent = [];
     let popularContent = [];
@@ -470,13 +481,12 @@
     
     let currentDetailData = null; 
     let currentDetailMovieKey = null;
-    let currentPlaybackID = null; // New variable to track the current playing item's ID for Local Storage
+    let currentPlaybackID = null; 
 
-    // --- ADS LIST (Updated with your new links) ---
+    // --- ADS LIST (unchanged) ---
     const adLinks = [
         "https://www.effectivegatecpm.com/yz4z5szmf?key=73186bcddd33133e4b3c585292f10bde",
         "https://www.effectivegatecpm.com/s2mq62in?key=b17a7185381af8ce5baa404d8817d708",
-        // --- NEW LINKS ADDED FOR RANDOM EPISODE DOWNLOADS ---
         "https://www.effectivegatecpm.com/dqm7ya0myx?key=976aa4962ea641f87639dfc784b35969",
         "https://www.effectivegatecpm.com/b7gn1rctv?key=a6df49ee2755a88078fad4af6ebd06bf",
         "https://www.effectivegatecpm.com/cm2npj3b6n?key=bbdca23bff7d7d54853f830d7c238ddf",
@@ -487,12 +497,11 @@
     // --- INITIALIZATION ---
     window.onload = function() {
         loadData();
-        setupVideoEvents(); // New function call
-        // Initial Ad Popup
+        setupVideoEvents(); 
         setTimeout(() => { showAdPopup(null, 0); }, 10000); 
     };
 
-    // --- DATA LOADING (OPTIMIZED) ---
+    // --- DATA LOADING ---
     async function loadData() {
         spinner.style.display = 'block';
         grid.innerHTML = '';
@@ -523,7 +532,6 @@
             allContent.reverse();
             popularContent.reverse();
 
-            // Default View
             setFilter('all');
 
         } catch (error) {
@@ -536,7 +544,6 @@
 
     // --- NAVIGATION HANDLER ---
     function handleNavClick(filter, element) {
-        // Reset active classes
         if(element) {
             document.querySelectorAll('.nav-item-btn').forEach(el => el.classList.remove('active'));
             element.classList.add('active');
@@ -547,7 +554,6 @@
         document.getElementById("searchBar").value = '';
         closeDetail();
         
-        // Small delay for UI responsiveness
         setTimeout(() => {
             setFilter(filter);
             spinner.style.display = 'none';
@@ -579,7 +585,7 @@
         renderPage(currentPage);
     }
 
-    // --- RENDER PAGE (FIX FOR FREEZING) ---
+    // --- RENDER PAGE ---
     function renderPage(page) {
         const start = (page - 1) * MOVIES_PER_PAGE;
         const end = start + MOVIES_PER_PAGE;
@@ -592,7 +598,6 @@
             return;
         }
 
-        // Build HTML String first (Performance Fix)
         let htmlBuffer = '';
         pageItems.forEach(movie => {
             const tag = movie.isPopular ? 'Popular' : (movie.type === 'series' ? 'Series' : 'Movie');
@@ -605,9 +610,8 @@
             `;
         });
         
-        grid.innerHTML = htmlBuffer; // Single DOM Update
+        grid.innerHTML = htmlBuffer; 
 
-        // Pagination Buttons
         paginationControls.style.display = totalPages > 1 ? 'flex' : 'none';
         document.getElementById("prevBtn").disabled = page === 1;
         document.getElementById("nextBtn").disabled = page >= totalPages;
@@ -641,7 +645,7 @@
         currentDetailData = movie;
         currentDetailMovieKey = key;
 
-        // Populate UI
+        // Populate UI 
         document.getElementById("modalImg").src = movie.img;
         document.getElementById("modalTitle").innerText = movie.title;
         document.getElementById("modalDesc").innerText = movie.genres || '';
@@ -657,15 +661,17 @@
 
         // Reset Player
         playerContainer.style.display = 'none';
-        const video = document.getElementById("inModalVideoPlayer");
-        video.pause();
-        video.removeAttribute('src');
+        videoPlayer.pause();
+        videoPlayer.src = '';
+        
+        document.getElementById("playbackInfo").style.display = 'none';
+        document.getElementById("playbackInfo").innerText = '';
 
-        // Favorite Button State
+        // Favorite Button State 
         updateFavBtnState(key);
         favBtn.onclick = () => toggleFavorite(key);
 
-        // Other Download Button
+        // Other Download Button 
         if(movie.otherDownloadLink && movie.otherDownloadLink.length > 5) {
             otherBtn.style.display = 'block';
             otherBtn.onclick = () => window.open(movie.otherDownloadLink, '_blank');
@@ -674,12 +680,12 @@
         }
 
         if(movie.type === 'series') {
-            // SERIES MODE
+            // SERIES MODE 
             playBtn.style.display = 'none';
             downloadBtn.style.display = 'none';
             seriesContainer.style.display = 'block';
             
-            // Populate Seasons
+            // Populate Seasons 
             const seasonSelect = document.getElementById("seasonSelect");
             seasonSelect.innerHTML = '';
             const count = movie.seasons || 1;
@@ -689,18 +695,17 @@
                 opt.innerText = `Season ${i}`;
                 seasonSelect.appendChild(opt);
             }
-            // Trigger first season load
             displaySeasonEpisodes('S1');
 
         } else {
-            // MOVIE MODE
+            // MOVIE MODE 
             playBtn.style.display = 'block';
             downloadBtn.style.display = 'block';
             seriesContainer.style.display = 'none';
 
             // Pass key as the playback ID for movies
-            playBtn.onclick = () => playVideo(movie.play, key);
-            downloadBtn.onclick = () => showAdPopup(movie.download, 10);
+            playBtn.onclick = () => playVideo(movie.play, key, movie.title);
+            downloadBtn.onclick = () => showAdPopup(movie.download, 20);
         }
 
         document.getElementById("modal").style.display = "block";
@@ -708,90 +713,117 @@
 
     function closeDetail() {
         const modal = document.getElementById("modal");
-        const video = document.getElementById("inModalVideoPlayer");
         
-        // COMPLETELY RESET VIDEO TO FIX FREEZING
-        video.pause();
-        video.removeAttribute('src'); 
-        video.load(); 
+        // Save the video's last position when the modal closes
+        if (currentPlaybackID && !videoPlayer.ended && videoPlayer.currentTime > 0) {
+            localStorage.setItem(`playback_${currentPlaybackID}`, videoPlayer.currentTime.toString());
+            console.log(`Last position saved: ${videoPlayer.currentTime.toFixed(2)} seconds`);
+        }
+        
+        videoPlayer.pause();
+        videoPlayer.src = '';
+        videoPlayer.load();
         document.getElementById("inModalPlayerContainer").style.display = 'none';
-        currentPlaybackID = null; // Clear playback ID
+        currentPlaybackID = null;
+        
+        document.getElementById("playbackInfo").style.display = 'none';
         
         modal.style.display = "none";
         currentDetailData = null;
     }
 
-    // --- VIDEO PLAYER (MODIFIED) ---
-    function playVideo(url, playbackID) {
-        if(!url) return alert("Link not available");
+    // --- VIDEO PLAYER - Function to Play from Last Position ---
+    function playVideo(url, playbackID, seriesTitle = 'Movie', season = '', episodeTitle = '') {
+        if(!url) return alert("Link is not available");
         
         const container = document.getElementById("inModalPlayerContainer");
-        const video = document.getElementById("inModalVideoPlayer");
-        
-        currentPlaybackID = playbackID; // Set the current playing item's unique ID
+        const infoDiv = document.getElementById("playbackInfo");
+
+        // Set up the video
+        videoPlayer.pause();
+        videoPlayer.src = url;
+        currentPlaybackID = playbackID; 
         
         container.style.display = 'block';
-        video.src = url;
-        video.load();
+        
+        // Show playback information
+        if (seriesTitle !== 'Movie' && season && episodeTitle) {
+            const epNumMatch = episodeTitle.match(/(\d+)/);
+            const epNum = epNumMatch ? epNumMatch[1] : '?';
+            infoDiv.innerText = `Season ${season.slice(1)} - Episode ${epNum}`;
+            infoDiv.style.display = 'block';
+        } else {
+            infoDiv.innerText = seriesTitle;
+            infoDiv.style.display = 'block';
+        }
 
-        // Check Local Storage for saved time
-        video.onloadeddata = () => {
-             if (video.readyState >= 2) {
+        // On video load
+        videoPlayer.addEventListener('loadedmetadata', function handleLoad() {
+            videoPlayer.removeEventListener('loadedmetadata', handleLoad);
+            
+            if (videoPlayer.duration > 0) {
+                // Get the previous position from local storage
                 const savedTime = localStorage.getItem(`playback_${currentPlaybackID}`);
-                if (savedTime) {
-                    // Start 5 seconds before saved time to avoid missing content due to background pause timing
-                    const startTime = Math.max(0, parseFloat(savedTime) - 5); 
-                    video.currentTime = startTime;
-                    console.log(`Resuming video at ${startTime.toFixed(2)} seconds.`);
+                
+                if (savedTime && savedTime > 0) {
+                    // Start playing from 10 seconds back
+                    const resumeTime = Math.max(0, parseFloat(savedTime) - 10);
+                    videoPlayer.currentTime = resumeTime;
+                    
+                    // Notify the user
+                    const minutes = Math.floor(resumeTime / 60);
+                    const seconds = Math.floor(resumeTime % 60);
+                    
                 }
-                video.play().catch(e => console.log("Play error", e));
-             }
-        };
+                
+                // Play the video
+                videoPlayer.play().catch(e => {
+                    console.log("The user will have to press the play button manually");
+                });
+            }
+        });
 
-        // Scroll to top of modal to see player
+        // Load the video
+        videoPlayer.load();
+        
+        // Scroll up
         document.getElementById("modal").scrollTo({ top: 0, behavior: 'smooth' });
     }
 
-    // --- VIDEO EVENT HANDLERS (NEW FUNCTION) ---
+    // --- VIDEO EVENT HANDLERS - For saving video position ---
     function setupVideoEvents() {
-        const video = document.getElementById("inModalVideoPlayer");
         
-        // 1. Save playback position every 5 seconds
-        video.ontimeupdate = debounce(() => {
-            if (currentPlaybackID && !video.paused && !video.ended) {
-                // Save current time
-                localStorage.setItem(`playback_${currentPlaybackID}`, video.currentTime.toFixed(2));
-            }
-        }, 5000); // 5 seconds debounce
-
-        // 2. Save position on pause
-        video.onpause = () => {
-            if (currentPlaybackID && !video.ended) {
-                localStorage.setItem(`playback_${currentPlaybackID}`, video.currentTime.toFixed(2));
+        // Save the video position every 5 seconds
+        let saveTimeout;
+        videoPlayer.ontimeupdate = function() {
+            clearTimeout(saveTimeout);
+            saveTimeout = setTimeout(() => {
+                if (currentPlaybackID && !videoPlayer.paused && !videoPlayer.ended) {
+                    // Only save if played for more than 5 seconds
+                    if (videoPlayer.currentTime > 5) {
+                        localStorage.setItem(`playback_${currentPlaybackID}`, videoPlayer.currentTime.toString());
+                    }
+                }
+            }, 1000);
+        };
+        
+        // Save immediately when the video pauses
+        videoPlayer.onpause = function() {
+            if (currentPlaybackID && !videoPlayer.ended) {
+                localStorage.setItem(`playback_${currentPlaybackID}`, videoPlayer.currentTime.toString());
             }
         };
-
-        // 3. Clear position on end/completion
-        video.onended = () => {
+        
+        // Delete the position when the video ends
+        videoPlayer.onended = function() {
             if (currentPlaybackID) {
                 localStorage.removeItem(`playback_${currentPlaybackID}`);
                 currentPlaybackID = null;
             }
         };
     }
-    
-    // Simple debounce utility function
-    function debounce(func, wait) {
-        let timeout;
-        return function(...args) {
-            const context = this;
-            clearTimeout(timeout);
-            timeout = setTimeout(() => func.apply(context, args), wait);
-        };
-    }
 
-
-    // --- SERIES EPISODES (FIX APPLIED HERE) ---
+    // --- SERIES EPISODES ---
     function displaySeasonEpisodes(season) {
         const list = document.getElementById("episodeList");
         list.innerHTML = '';
@@ -802,25 +834,26 @@
         }
 
         const eps = currentDetailData.episodes[season];
-        // Sort keys ep_1, ep_2...
+        const seriesTitle = currentDetailData.title.replace(/'/g, "\\'");
+        
         Object.keys(eps).sort((a,b) => parseInt(a.slice(3)) - parseInt(b.slice(3))).forEach(key => {
             const ep = eps[key];
-            const playbackID = `${currentDetailMovieKey}_${season}_${key}`; // Unique ID for series episodes
+            const playbackID = `${currentDetailMovieKey}_${season}_${key}`;
             
             const div = document.createElement("div");
             div.className = "episode-item";
             div.innerHTML = `
                 <span>${ep.title}</span>
                 <div class="ep-actions">
-                    <button class="ep-play" onclick="playVideo('${ep.link}', '${playbackID}')">Play</button>
-                    <button class="ep-down" onclick="showAdPopup(null, 10)">Dawnload</button> 
+                    <button class="ep-play" onclick="playVideo('${ep.link}', '${playbackID}', '${seriesTitle}', '${season}', '${ep.title.replace(/'/g, "\\'")}')">Play</button>
+                    <button class="ep-down" onclick="showAdPopup(null, 10)">Download</button> 
                 </div>
             `;
             list.appendChild(div);
         });
     }
 
-    // --- SIDE MENU ---
+    // --- REST OF THE CODE ---
     function toggleSideMenu() {
         const menu = document.getElementById("sideMenu");
         const overlay = document.querySelector(".side-overlay");
@@ -828,7 +861,6 @@
         overlay.classList.toggle("active");
     }
 
-    // --- REQUEST FEATURE ---
     function openRequestModal() {
         document.getElementById("requestModal").style.display = 'flex';
     }
@@ -857,7 +889,6 @@
         });
     }
 
-    // --- FAVORITES ---
     function toggleFavorite(key) {
         let favs = JSON.parse(localStorage.getItem('favs') || '[]');
         if(favs.includes(key)) {
@@ -881,7 +912,6 @@
         }
     }
 
-    // --- CATEGORIES ---
     function showCategoriesOverlay() {
         document.getElementById("categoriesOverlay").style.display = 'flex';
         const list = document.getElementById("categoryListOverlay");
@@ -907,13 +937,11 @@
         document.getElementById("categoriesOverlay").style.display = 'none';
     }
 
-    // --- AD POPUP LOGIC ---
     function showAdPopup(url, time) {
         const adDiv = document.getElementById("adPopup");
         const iframe = document.getElementById("adIframe");
         const timerEl = document.getElementById("adTimer");
         
-        // Random link if 'url' is null or too short (i.e., when called from Series DL button)
         if(!url || url.length < 5) {
             url = adLinks[Math.floor(Math.random() * adLinks.length)];
         }
@@ -930,7 +958,7 @@
             if(timeLeft <= 0) {
                 clearInterval(interval);
                 adDiv.style.display = 'none';
-                iframe.src = ''; // Clean up to prevent background usage
+                iframe.src = ''; 
             }
         }, 1000);
     }
