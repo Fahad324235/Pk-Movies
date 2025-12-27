@@ -825,33 +825,47 @@
 
     // --- SERIES EPISODES ---
     function displaySeasonEpisodes(season) {
-        const list = document.getElementById("episodeList");
-        list.innerHTML = '';
+    const list = document.getElementById("episodeList");
+    
+    // 1. پہلے لسٹ کو خالی کریں اور ویل (Spinner) دکھائیں
+    list.innerHTML = `
+        <div style="text-align: center; padding: 20px;">
+            <div class="spinner" style="width: 30px; height: 30px; border-width: 3px;"></div>
+            <p style="font-size: 12px; color: #888;">Loading Episodes...</p>
+        </div>
+    `;
+    
+    // 2. ڈیڑھ سیکنڈ (1500ms) کا انتظار کریں
+    setTimeout(() => {
+        list.innerHTML = ''; // لوڈنگ ختم کریں
         
         if(!currentDetailData.episodes || !currentDetailData.episodes[season]) {
-            list.innerHTML = '<p style="color:#888;">No episodes added yet.</p>';
+            list.innerHTML = '<p style="color:#888; text-align:center;">No episodes added yet.</p>';
             return;
         }
 
         const eps = currentDetailData.episodes[season];
         const seriesTitle = currentDetailData.title.replace(/'/g, "\\'");
         
+        let htmlBuffer = '';
         Object.keys(eps).sort((a,b) => parseInt(a.slice(3)) - parseInt(b.slice(3))).forEach(key => {
             const ep = eps[key];
             const playbackID = `${currentDetailMovieKey}_${season}_${key}`;
             
-            const div = document.createElement("div");
-            div.className = "episode-item";
-            div.innerHTML = `
-                <span>${ep.title}</span>
-                <div class="ep-actions">
-                    <button class="ep-play" onclick="playVideo('${ep.link}', '${playbackID}', '${seriesTitle}', '${season}', '${ep.title.replace(/'/g, "\\'")}')">Play</button>
-                    <button class="ep-down" onclick="showAdPopup(null, 10)">Download</button> 
+            htmlBuffer += `
+                <div class="episode-item">
+                    <span>${ep.title}</span>
+                    <div class="ep-actions">
+                        <button class="ep-play" onclick="playVideo('${ep.link}', '${playbackID}', '${seriesTitle}', '${season}', '${ep.title.replace(/'/g, "\\'")}')">Play</button>
+                        <button class="ep-down" onclick="showAdPopup(null, 10)">Download</button> 
+                    </div>
                 </div>
             `;
-            list.appendChild(div);
         });
-    }
+        list.innerHTML = htmlBuffer;
+    }, 1500); // یہاں 1500 کا مطلب ڈیڑھ سیکنڈ ہے
+}
+
 
     // --- REST OF THE CODE ---
     function toggleSideMenu() {
